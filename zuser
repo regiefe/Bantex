@@ -1,0 +1,8 @@
+;  Delegated sub-zone:  $1.volkswagen.com.br.
+;$1        3600        IN      A      $2
+;  End delegation
+
+;  Delegated sub-zone:  reginaldo.volkswagen.com.br.
+;
+$1        3600        IN      CNAME    
+;  End delegation
