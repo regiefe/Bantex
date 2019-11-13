@@ -2,6 +2,7 @@
 SEP=:
 TEMP=temp.$$
 MASCARA=§
+BANCO=usuarios.txt
 
 [ "$BANCO" ] || {
     echo "Base de dados não informada. Use a variavel BANCO."

@@ -1,77 +1,75 @@
 #!/bin/bash
-BANCO=usuarios.txt
+
+BANCO=usuario.txt
 
 source bantex.sh || {
     echo "Ops, ocorreu algum erro no gerenciador do banco"
-    exit 1
+exit 1
 }
 
-show(){
-    acao=$( dialog --stdout                            \
-        --menu "Aplicatico $0 - Interface amigavel"    \
-        0 0 0                                          \
-        lista "lista de todos os usuarios do sistema"  \
-        adiciona "Adiciona um usuario novo no sistema" \
-        remove "Remove um usuario do sistema")
-}
+acao=$(dialog --stdout \
+    --menu "Aplicativo Zuserd - Inteface amigavel" \
+    0 0 0 \
+    lista    "Lista todos os usuarios do sistema"\
+    adiciona "Adiciona um  usuarios do sistema"\
+    remove   "Remove um  usuarios do sistema"\
+    sair "Para sair do sistema ")
+
 
 lista(){
-
-    > lista
-    temp=lista
+    touch tmp.txt
+    temp=tmp.txt
     pega_campo 1 | sed 1d > "$temp"
     dialog --title "Usuarios" --textbox "$temp" 13 30
-    rm "$temp"
+    rm $temp
 }
 
 adiciona(){
-        login=$(dialog --stdout --inputbox "Digita o login:" 0 0)
-
-        [ $? -ne 0 ] && continue
-        [ "$login" ] || continue
+        login=$(dialog --stdout --inputbox "Digite o login: " 0 0)
+        [ "$login" ] ||  exit 1
 
         tem_chave "$login" && {
-            msg="O usuario '$login já foi cadastrado.'"
+            msg="O usuario '$loign' ja foi cadastrodo."
         dialog --msgbox "$msg" 6 40
-        continue
+        exit 1
     }
 
-    nome=$(dialog --stdout --inputbox "Nome complete:" 0 0)
-    [ $? -ne 0 ] && continue
-    idade=$(dialog --stdout --inputbox "Idade:" 0 0)
-    [ $? -ne 0 ] && continue
-     sexo=$(dialog --stdout --radiolist "Sexo" 0 0 3 \
+    nome=$(dialog --stdout --inputbox "Nome completo:" 0 0)
+    idade=$(dialog --stdout --inputbox "Digite a idade:" 0 0)
+    sexo=$(dialog --stdout --radiolist "sexo:" 0 0 3\
         Feminino "" on Masculino "" off)
-    [ $? -ne 0 ] && continue
+
     sexo=$(echo $sexo | cut -c1)
-
-    nome=$(echo $nome | mascara)
-
+    nome=$(echo $nome| mascara)
     msg=$(insere_registro "$login:$nome:$idade:$sexo")
     dialog --title "Resultado" --msgbox "$msg" 6 40
 }
 
 remove(){
     usuarios=$(pega_campo 1,2 | sed 1d) 
-    usuarios=$(echo "$usuarios" | sed 's/:/ "/;s/$/" /')
+    usuarios=$(echo "$usuarios" | sed 's/:/ "/;s/$/"/') 
 
-    login=$(eval dialog --stdout\
+    login=$(eval dialog --stdout \
         --menu \"Escolha o usuario a remover\" \
         0 0 0 $usuarios)
-    [ $? -ne 0 ] && continue
 
     msg=$(apaga_registro "$login")
     dialog --title "Resultado" --msgbox "$msg" 6 40
 }
+sair(){
+    dialog --title 'sair' \
+        --yesno \
+        "\n Sair do sistema agora\n\n" \
+    0 0
+    [ $? -ne 0 ] || exit 0
+}
 
 while :
 do
-    show
-    [ $? -ne 0 ] && exit
-    case "$acao" in
+    case "$acao" in 
         lista) lista ;;
         adiciona) adiciona ;;
         remove) remove ;;
+        sair) sair ;;
     esac
 done
-

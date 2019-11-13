@@ -1,8 +1,75 @@
-;  Delegated sub-zone:  $1.volkswagen.com.br.
-;$1        3600        IN      A      $2
-;  End delegation
+#!/bin/bash
+BANCO=usuario.txt
 
-;  Delegated sub-zone:  reginaldo.volkswagen.com.br.
-;
-$1        3600        IN      CNAME    
-;  End delegation
+source bantex.sh || {
+    echo "Ops, ocorreu algum erro no gerenciador do banco"
+exit 1
+}
+
+[ "$1" ] || {
+    echo
+    echo  " Uso: zuser [ lista | adiciona | remove ]"
+    echo
+    echo  "     lista   - lista todos os usuarios do sistema"
+    echo  "     adiciona   - Adiciona um  usuarios do sistema"
+    echo  "     remove   - Remove um  usuarios do sistema"
+    echo
+    exit 0 
+}
+
+lista(){
+    pega_campo 1 | sed 1d
+}
+
+adiciona(){
+    echo -n  "Digite o login do  usuario novo: "
+    read login
+    [ "$login" ] || {
+        echo "O login não pode ser vazio, tente novamente."
+        exit 1
+    }
+
+    tem_chave "$login" && {
+        echo  "O usuario '$loign' ja foi cadastrodo."
+        exit 1
+    }
+
+    echo -n "Digite o nome completo: "
+    read nome
+    echo -n "Digite a idade : "
+    read idade
+    echo -n "É do  sexo masculino ou feminido: [M|F] "
+    read sexo
+    echo
+
+    nome=$(echo $nome | mascara)
+
+    insere_registro "$login:$nome:$idade:$sexo"
+    echo
+}
+
+remove(){
+    echo "Lista dos usuarios do sistema Z: "
+    pega_campo 1 | sed 1d | tr \\n ' '
+    echo
+    echo
+    echo -n "Qual usuario você quer remover? "
+    read login
+    echo
+    if tem_chave "$login"; then
+        apaga_registro "$login"
+    else
+        echo "Não não esse usuario não esta aqui ... "
+    fi
+    echo
+}
+
+case $1 in 
+    lista) lista ;;
+    adiciona) adiciona ;;
+    remove) remove ;;
+    *)
+        echo "Opção inválida $1"
+        exit 1
+        ;;
+esac
