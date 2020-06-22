@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# shellcheck disable=SC2034 
+# shellcheck disable=SC2154
 
 BANCO=usuario.txt
 
@@ -7,21 +10,12 @@ source bantex.sh || {
 exit 1
 }
 
-acao=$(dialog --stdout \
-    --menu "Aplicativo Zuserd - Inteface amigavel" \
-    0 0 0 \
-    lista    "Lista todos os usuarios do sistema"\
-    adiciona "Adiciona um  usuarios do sistema"\
-    remove   "Remove um  usuarios do sistema"\
-    sair "Para sair do sistema ")
-
 
 lista(){
-    touch tmp.txt
-    temp=tmp.txt
-    pega_campo 1 | sed 1d > "$temp"
-    dialog --title "Usuarios" --textbox "$temp" 13 30
-    rm $temp
+    pega_campo 1 > show
+    dialog --title "Usuarios" --textbox show 13 30
+    rm  show
+    init 
 }
 
 adiciona(){
@@ -29,9 +23,9 @@ adiciona(){
         [ "$login" ] ||  exit 1
 
         tem_chave "$login" && {
-            msg="O usuario '$loign' ja foi cadastrodo."
+        msg="O usuario ja foi cadastrodo."
         dialog --msgbox "$msg" 6 40
-        exit 1
+        init 
     }
 
     nome=$(dialog --stdout --inputbox "Nome completo:" 0 0)
@@ -43,33 +37,48 @@ adiciona(){
     nome=$(echo $nome| mascara)
     msg=$(insere_registro "$login:$nome:$idade:$sexo")
     dialog --title "Resultado" --msgbox "$msg" 6 40
+    init
 }
 
 remove(){
     usuarios=$(pega_campo 1,2 | sed 1d) 
     usuarios=$(echo "$usuarios" | sed 's/:/ "/;s/$/"/') 
 
-    login=$(eval dialog --stdout \
+    login=$(eval dialog --stdout               \
         --menu \"Escolha o usuario a remover\" \
         0 0 0 $usuarios)
 
     msg=$(apaga_registro "$login")
     dialog --title "Resultado" --msgbox "$msg" 6 40
+    init
 }
+
 sair(){
-    dialog --title 'sair' \
-        --yesno \
+    dialog --title 'sair'              \
+        --yesno                        \
         "\n Sair do sistema agora\n\n" \
     0 0
     [ $? -ne 0 ] || exit 0
+    init
 }
 
-while :
-do
-    case "$acao" in 
-        lista) lista ;;
-        adiciona) adiciona ;;
-        remove) remove ;;
-        sair) sair ;;
-    esac
-done
+init(){
+    acao=$(dialog --stdout                             \
+        --menu "Aplicativo Zuserd - Inteface amigavel" \
+        0 0 0                                          \
+        lista    "Lista todos os usuarios do sistema"  \
+        adiciona "Adiciona um  usuarios do sistema"    \
+        remove   "Remove um  usuarios do sistema"      \
+        sair "Para sair do sistema ")
+
+    while :
+    do
+        case "$acao" in 
+            lista) lista ;;
+            adiciona) adiciona ;;
+            remove) remove ;;
+            sair) sair ;;
+        esac
+    done
+}
+init

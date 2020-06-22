@@ -8,6 +8,7 @@ BANCO=usuarios.txt
     echo "Base de dados não informada. Use a variavel BANCO."
     return 1
 }
+
 [ -r "$BANCO" -a -w "$BANCO" ] || {
     echo "Base travada, confirme as permissões de escrita e leitura."
     return 1
@@ -23,7 +24,6 @@ apaga_registro() {
     mv "$TEMP" "$BANCO"
     echo "O registro '$1' foi apagado"
 }
-
 
 insere_registro() {
     local chave=$(echo "$1" | cut -d $SEP -f1)
